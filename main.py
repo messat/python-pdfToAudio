@@ -1,11 +1,13 @@
 from PyPDF2 import PdfReader
 from gtts import gTTS
-from flask import Flask, request, send_file, render_template, flash, redirect, url_for, send_from_directory
+from flask import Flask, request, render_template, flash, redirect, send_from_directory, get_flashed_messages
 from werkzeug.utils import secure_filename
 import os
 
-UPLOAD_FOLDER = '/Users/muhammadessat/Downloads'
-AUDIO_FOLDER = '/Users/muhammadessat/desktop/audio'
+
+username = os.path.dirname(os.path.abspath(__file__)).split('/')[2]
+UPLOAD_FOLDER = f'/Users/{username}/Downloads'
+AUDIO_FOLDER = f'/Users/{username}/desktop/audio'
 ALLOWED_EXTENSIONS = {'pdf'}
 
 app = Flask(__name__)
@@ -28,16 +30,17 @@ def upload_file():
 @app.route("/uploader", methods=["GET","POST"])
 def uploaded_file():
     if request.method == "POST":
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
         file = request.files['file']
-        if file.filename == '':
+        if 'file' not in request.files:
+            get_flashed_messages('No file part')
+            return redirect(request.url)
+        elif file.filename == '':
             flash('No selected file')
-            print(request.url)
-            return render_template('error.html')
-        
-        if file and allowed_file(file.filename):
+            return render_template('upload.html', emptyFile = file.filename)
+        elif file.filename.split('.')[-1] != 'pdf' and file.filename != '':
+            pdfChecker = file.filename.split('.')[-1]
+            return render_template('upload.html', pdfChecker=pdfChecker)  
+        elif file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             uploaded_file = file
             file_path = (os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -50,14 +53,23 @@ def uploaded_file():
             tts = gTTS(clean_text, lang='en')
             mp3_filename = filename[:-3] + "mp3"
             audio_path = (os.path.join(app.config['AUDIO_FOLDER'], mp3_filename))
+            (os.remove(file_path))
             tts.save(audio_path)
-            return redirect(url_for('upload_file', name=mp3_filename))
-        return "file uploaded successfully"
+            return redirect(f"/uploads/{mp3_filename}")
 
 @app.route('/uploads/<name>')
 def download_file(name):
+    mp3_file = f"/player/{name}"
+    return render_template('mp3.html', mp3_file=mp3_file, name=name)
+
+@app.route('/player/<name>')
+def mp3_player(name):
     return send_from_directory(app.config["AUDIO_FOLDER"], name)
 
+@app.route('/upload/<name>/delete', methods=["GET"])
+def delete_audio_file(name):
+    os.remove(os.path.join(app.config['AUDIO_FOLDER'], name))
+    return redirect('/upload')
 
 if __name__ == '__main__':
     app.run(debug=True)
