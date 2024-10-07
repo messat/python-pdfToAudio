@@ -60,7 +60,9 @@ def uploaded_file():
 @app.route('/uploads/<name>')
 def download_file(name):
     mp3_file = f"/player/{name}"
-    return render_template('mp3.html', mp3_file=mp3_file, name=name)
+    mp3_filename = name[:-4].split("_")
+    filename = " ".join(mp3_filename).strip()
+    return render_template('mp3.html', mp3_file=mp3_file, name=name, filename=filename)
 
 @app.route('/player/<name>')
 def mp3_player(name):
