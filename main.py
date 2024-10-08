@@ -14,6 +14,7 @@ app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['AUDIO_FOLDER'] = AUDIO_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.secret_key = "super secret key"
 
 
@@ -32,30 +33,33 @@ def uploaded_file():
     if request.method == "POST":
         file = request.files['file']
         if 'file' not in request.files:
-            get_flashed_messages('No file part')
+            flash('No file part')
             return redirect(request.url)
         elif file.filename == '':
             flash('No selected file')
             return render_template('upload.html', emptyFile = file.filename)
         elif file.filename.split('.')[-1] != 'pdf' and file.filename != '':
             pdfChecker = file.filename.split('.')[-1]
-            return render_template('upload.html', pdfChecker=pdfChecker)  
+            return render_template('upload.html', pdfChecker=pdfChecker)   
         elif file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             uploaded_file = file
             file_path = (os.path.join(app.config['UPLOAD_FOLDER'], filename))
             uploaded_file.save(file_path)
-            reader = PdfReader(file_path)
-            clean_text = ''
-            for page_num in range(len(reader.pages)):
-                text = reader.pages[page_num].extract_text()
-                clean_text += text.strip().replace('\n', ' ')
-            tts = gTTS(clean_text, lang='en')
-            mp3_filename = filename[:-3] + "mp3"
-            audio_path = (os.path.join(app.config['AUDIO_FOLDER'], mp3_filename))
-            (os.remove(file_path))
-            tts.save(audio_path)
-            return redirect(f"/uploads/{mp3_filename}")
+            file_length = os.stat(file_path).st_size
+            if file_length <= app.config['MAX_CONTENT_LENGTH']:
+                reader = PdfReader(file_path)
+                clean_text = ''
+                for page_num in range(len(reader.pages)):
+                    text = reader.pages[page_num].extract_text()
+                    clean_text += text.strip().replace('\n', ' ')
+                tts = gTTS(clean_text, lang='en')
+                mp3_filename = filename[:-3] + "mp3"
+                audio_path = (os.path.join(app.config['AUDIO_FOLDER'], mp3_filename))
+                (os.remove(file_path))
+                tts.save(audio_path)
+                return redirect(f"/uploads/{mp3_filename}")
+            
 
 @app.route('/uploads/<name>')
 def download_file(name):
