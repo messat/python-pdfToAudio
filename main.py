@@ -4,7 +4,7 @@ from flask import Flask, request, render_template, flash, redirect, send_from_di
 from werkzeug.utils import secure_filename
 import os
 import time
-
+from languages.languageSelect import all_languages
 app = Flask(__name__)
 
 username = os.path.dirname(os.path.abspath(__file__)).split('/')[2]
@@ -35,12 +35,13 @@ def allowed_file(filename):
 @app.route('/')
 @app.route('/upload')
 def upload_file():
-    return render_template('upload.html')
+    return render_template('upload.html', all_languages=all_languages)
 
 
 @app.route("/uploader", methods=["GET","POST"])
 def uploaded_file():
     if request.method == "POST":
+        language_spoken = request.form.get('language') 
         file = request.files['file']
         if 'file' not in request.files:
             flash('No file part')
@@ -63,12 +64,10 @@ def uploaded_file():
                 for page_num in range(len(reader.pages)):
                     text = reader.pages[page_num].extract_text()
                     clean_text += text.strip().replace('\n', ' ')
-                
                 time.sleep(3)
-                tts = gTTS(clean_text, lang='en')
+                tts = gTTS(clean_text, lang=str(language_spoken))
                 mp3_filename = filename[:-3] + "mp3"
                 audio_path = (os.path.join(app.config['AUDIO_FOLDER'], mp3_filename))
-                # os.remove(file_path)
                 tts.save(audio_path)
                 return redirect(f"/uploads/{mp3_filename}")
             
