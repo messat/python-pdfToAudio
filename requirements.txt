@@ -1,8 +1,13 @@
+blinker==1.8.2
 certifi==2024.8.30
 charset-normalizer==3.3.2
 click==8.1.7
+Flask==3.0.3
 gTTS==2.5.3
 idna==3.10
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==2.1.5
 pyobjc==10.3.1
 pyobjc-core==10.3.1
 pyobjc-framework-Accessibility==10.3.1
@@ -158,5 +163,7 @@ pyobjc-framework-Virtualization==10.3.1
 pyobjc-framework-Vision==10.3.1
 pyobjc-framework-WebKit==10.3.1
 PyPDF2==3.0.1
+pyttsx3==2.98
 requests==2.32.3
 urllib3==2.2.3
+Werkzeug==3.0.4
