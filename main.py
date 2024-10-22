@@ -1,20 +1,30 @@
 from PyPDF2 import PdfReader
 from gtts import gTTS
-from flask import Flask, request, render_template, flash, redirect, send_from_directory, get_flashed_messages
+from flask import Flask, request, render_template, flash, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 import os
-
-
-username = os.path.dirname(os.path.abspath(__file__)).split('/')[2]
-UPLOAD_FOLDER = f'/Users/{username}/Downloads'
-AUDIO_FOLDER = f'/Users/{username}/desktop/audio'
-ALLOWED_EXTENSIONS = {'pdf'}
+import time
 
 app = Flask(__name__)
 
+username = os.path.dirname(os.path.abspath(__file__)).split('/')[2]
+
+UPLOAD_FOLDER = f'/Users/{username}/Downloads'
+AUDIO_FOLDER = f'/Users/{username}/desktop/audio'
+
+ALLOWED_EXTENSIONS = {'pdf'}
+
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['AUDIO_FOLDER'] = AUDIO_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+if not os.path.exists(app.config['AUDIO_FOLDER']):
+    os.makedirs(app.config['AUDIO_FOLDER'])
+
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1000 * 1000
 app.secret_key = "super secret key"
 
 
@@ -53,10 +63,12 @@ def uploaded_file():
                 for page_num in range(len(reader.pages)):
                     text = reader.pages[page_num].extract_text()
                     clean_text += text.strip().replace('\n', ' ')
+                
+                time.sleep(3)
                 tts = gTTS(clean_text, lang='en')
                 mp3_filename = filename[:-3] + "mp3"
                 audio_path = (os.path.join(app.config['AUDIO_FOLDER'], mp3_filename))
-                (os.remove(file_path))
+                # os.remove(file_path)
                 tts.save(audio_path)
                 return redirect(f"/uploads/{mp3_filename}")
             
