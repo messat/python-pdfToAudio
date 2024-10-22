@@ -48,13 +48,20 @@ crossorigin="anonymous"
               accept=".pdf"
               class="btn btn-secondary mx-3"
             />
+
+            <select name="language" id="hello">
+              <option value="en" selected>English</option>
+              {% for key, value in all_languages.items() %}
+              <option value="{{ key }}">{{ value }}</option>
+              {% endfor %}
+            </select>
+            
             <input
               type="submit"
               onclick="update()"
               value="Upload"
               class="btn btn-success p-2"
             />
-            <!-- <input type="submit" value="Upload" class="btn btn-success p-2"/> -->
           </form>
           <div class="container">
           <div id="Progress_Status">
