@@ -27,6 +27,7 @@ rel="stylesheet"
 integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
 crossorigin="anonymous"
 />
+<link rel="stylesheet" href="/static/style.css">
 <title>File Uploads</title>
 </head>
 
@@ -34,9 +35,9 @@ crossorigin="anonymous"
     
       
         <div class="row">
-          <p class="text-center mt-5 h2 mb-5">PDF to MP3: File Converter</p>
+          <p class="text-center mt-5 h2 mb-5" id="title">PDF >>> MP3: Text to Speech Converter</p>
           <div class="col-6 offset-3">
-          
+
           <form action="http://127.0.0.1:5000/uploader" method="POST" enctype="multipart/form-data" id="fileupload">
           <div class="mb-3">
             <label for="upload" class="mb-2 fs-6">Choose a PDF file: </label>

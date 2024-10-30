@@ -1,6 +1,6 @@
 from PyPDF2 import PdfReader
 from gtts import gTTS
-from flask import Flask, request, render_template, flash, redirect, send_from_directory
+from flask import Flask, request, render_template, flash, redirect, send_from_directory, send_file
 from werkzeug.utils import secure_filename
 import os
 import time
@@ -68,7 +68,6 @@ def uploaded_file():
                 for page_num in range(len(reader.pages)):
                     text = reader.pages[page_num].extract_text()
                     clean_text += text.strip().replace('\n', ' ')
-                print(clean_text)
                 # time.sleep(3)
                 tts = gTTS(clean_text, lang=str(language_spoken), tld=str(accent))
                 mp3_filename = filename[:-3] + "mp3"
@@ -88,10 +87,19 @@ def download_file(name):
 def mp3_player(name):
     return send_from_directory(app.config["AUDIO_FOLDER"], name)
 
+
+
 @app.route('/upload/<name>/delete', methods=["GET"])
 def delete_audio_file(name):
     os.remove(os.path.join(app.config['AUDIO_FOLDER'], name))
     return redirect('/upload')
+
+@app.route('/upload/<name>/download', methods=["GET"])
+def download_audio_file(name):
+    uploads = os.path.join(app.config['AUDIO_FOLDER'], name)
+    return send_file(uploads, as_attachment=True)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
