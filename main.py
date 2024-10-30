@@ -4,6 +4,8 @@ from flask import Flask, request, render_template, flash, redirect, send_from_di
 from werkzeug.utils import secure_filename
 import os
 import time
+import speech_recognition as sr
+from pydub import AudioSegment
 from languages.languageSelect import all_languages
 from languages.accent import accents_tld
 app = Flask(__name__)
@@ -88,7 +90,6 @@ def mp3_player(name):
     return send_from_directory(app.config["AUDIO_FOLDER"], name)
 
 
-
 @app.route('/upload/<name>/delete', methods=["GET"])
 def delete_audio_file(name):
     os.remove(os.path.join(app.config['AUDIO_FOLDER'], name))
@@ -98,6 +99,33 @@ def delete_audio_file(name):
 def download_audio_file(name):
     uploads = os.path.join(app.config['AUDIO_FOLDER'], name)
     return send_file(uploads, as_attachment=True)
+
+@app.route('/upload/<name>/view', methods=["GET"])
+def view_transcript(name):
+    mp3_path = os.path.join(app.config['AUDIO_FOLDER'], name)
+    wav_path = os.path.join(app.config['AUDIO_FOLDER'], name[0:-4] + '.wav')
+    sound = AudioSegment.from_mp3(mp3_path)
+    sound.export(wav_path, format='wav')
+    file_audio = sr.AudioFile(wav_path)
+
+    r = sr.Recognizer()
+
+    segment_duration = 5 * 60 
+    full_transcript = ""
+    with file_audio as source:
+        duration = int(sound.duration_seconds)
+        for start in range(0, duration, segment_duration):
+            audio_text = r.record(source, duration=segment_duration)
+            try:
+                full_transcript += r.recognize_google(audio_text) + " "
+            except sr.RequestError as e:
+                print(f"API request error: {e}")
+            except sr.UnknownValueError:
+                print("Google Speech Recognition could not understand the audio")
+    
+        file_name_text = name[0:-4]
+    return render_template('transcript.html', full_transcript=full_transcript, file_name_text=file_name_text)
+
 
 
 
