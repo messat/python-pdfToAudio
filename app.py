@@ -14,8 +14,8 @@ app = Flask(__name__)
 
 username = os.path.dirname(os.path.abspath(__file__)).split('/')[2]
 
-UPLOAD_FOLDER = f'/Users/{username}/Downloads'
-AUDIO_FOLDER = f'/Users/{username}/desktop/audio'
+UPLOAD_FOLDER = 'uploads'
+AUDIO_FOLDER = 'audio'
 
 ALLOWED_EXTENSIONS = {'pdf'}
 
