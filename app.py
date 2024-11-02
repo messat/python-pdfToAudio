@@ -127,7 +127,5 @@ def view_transcript(name):
     return render_template('transcript.html', full_transcript=full_transcript, file_name_text=file_name_text)
 
 
-
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=True)
